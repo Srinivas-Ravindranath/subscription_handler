@@ -70,12 +70,12 @@ func handlerSubscription(ctx context.Context, request events.APIGatewayProxyRequ
 		var addItem subscriptions.AddItem
 		err := json.Unmarshal([]byte(request.Body), &addItem)
 		finalAddItem := subscriptions.AddItem{
-			UUID:       uuid.New().String(),
-			UserName:   addItem.UserName,
-			VendorName: addItem.VendorName,
-			VendorUrl:  addItem.VendorUrl,
-			Duration:   addItem.Duration,
-			RemindTime: subscriptions.CalcRemindTime(addItem.Duration),
+			UUID:                 uuid.New().String(),
+			UserName:             addItem.UserName,
+			VendorName:           addItem.VendorName,
+			VendorUrl:            addItem.VendorUrl,
+			SubscriptionDuration: addItem.SubscriptionDuration,
+			RemindTime:           subscriptions.CalcRemindTime(addItem.SubscriptionDuration),
 		}
 		if err != nil {
 			return events.APIGatewayProxyResponse{StatusCode: 400, Body: "Bad Request"}, nil
@@ -144,11 +144,11 @@ func handlerUpdate(ctx context.Context, request events.APIGatewayProxyRequest) (
 		subscriptionID := request.PathParameters["subscription_id"]
 		err := json.Unmarshal([]byte(request.Body), &updateItem)
 		finalUpdateItem := subscriptions.UpdateItem{
-			UserName:   updateItem.UserName,
-			VendorName: updateItem.VendorName,
-			VendorUrl:  updateItem.VendorUrl,
-			Duration:   updateItem.Duration,
-			RemindTime: subscriptions.CalcRemindTime(updateItem.Duration),
+			UserName:             updateItem.UserName,
+			VendorName:           updateItem.VendorName,
+			VendorUrl:            updateItem.VendorUrl,
+			SubscriptionDuration: updateItem.SubscriptionDuration,
+			RemindTime:           subscriptions.CalcRemindTime(updateItem.SubscriptionDuration),
 		}
 		if err != nil {
 			return events.APIGatewayProxyResponse{StatusCode: 400, Body: "Bad Request"}, nil

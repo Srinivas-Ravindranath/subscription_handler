@@ -8,11 +8,11 @@ import (
 )
 
 type UpdateItem struct {
-	UserName   string
-	VendorName string
-	VendorUrl  string
-	Duration   string
-	RemindTime string
+	UserName             string
+	VendorName           string
+	VendorUrl            string
+	SubscriptionDuration string
+	RemindTime           string
 }
 
 type UpdateResponse struct {
@@ -23,26 +23,12 @@ type UpdateResponse struct {
 func UpdateSubscription(dynamoClient *dynamodb.DynamoDB, tableName, uuid string, item UpdateItem) UpdateResponse {
 
 	input := &dynamodb.UpdateItemInput{
-		ExpressionAttributeNames: map[string]*string{
-			"#U":   aws.String("UUID"),
-			"#UN":  aws.String("UserName"),
-			"#VU":  aws.String("VendorUrl"),
-			"#DUR": aws.String("Duration"),
-			"#RT":  aws.String("RemindTime"),
-			"#VN":  aws.String("VendorName"),
-		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":u": {
-				S: aws.String(uuid),
-			},
-			":un": {
-				S: aws.String(item.UserName),
-			},
 			":vu": {
 				S: aws.String(item.VendorUrl),
 			},
 			":dur": {
-				S: aws.String(item.Duration),
+				S: aws.String(item.SubscriptionDuration),
 			},
 			":rt": {
 				S: aws.String(item.RemindTime),
@@ -60,13 +46,11 @@ func UpdateSubscription(dynamoClient *dynamodb.DynamoDB, tableName, uuid string,
 				S: aws.String(item.UserName),
 			},
 		},
-		ReturnValues:        aws.String("UPDATED_NEW"),
-		ConditionExpression: aws.String("#U = :u AND #UN = :un"),
-		UpdateExpression:    aws.String("SET #VU = :vu #DUR = :dur, #RT = :rt, #VN = :vn"),
+		ReturnValues:     aws.String("UPDATED_NEW"),
+		UpdateExpression: aws.String("SET VendorUrl = :vu, SubscriptionDuration = :dur, RemindTime = :rt, VendorName = :vn"),
 	}
 
-	res, err := dynamoClient.UpdateItem(input)
-	log.Println(res)
+	_, err := dynamoClient.UpdateItem(input)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {

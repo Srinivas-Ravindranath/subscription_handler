@@ -17,12 +17,12 @@ type AddResponse struct {
 }
 
 type AddItem struct {
-	UUID       string
-	UserName   string
-	VendorName string
-	VendorUrl  string
-	Duration   string
-	RemindTime string
+	UUID                 string
+	UserName             string
+	VendorName           string
+	VendorUrl            string
+	SubscriptionDuration string
+	RemindTime           string
 }
 
 func CalcRemindTime(addtime string) string {

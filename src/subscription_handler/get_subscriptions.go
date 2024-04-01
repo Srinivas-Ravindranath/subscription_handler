@@ -10,20 +10,20 @@ import (
 )
 
 type GetItem struct {
-	UUID       string
-	VendorName string
-	VendorUrl  string
-	Duration   string
-	RemindTime string
+	UUID                 string
+	VendorName           string
+	VendorUrl            string
+	SubscriptionDuration string
+	RemindTime           string
 }
 
 type GetResponse struct {
-	UUID       string `json:"uuid"`
-	VendorName string `json:"vendor_name"`
-	VendorUrl  string `json:"vendor_url"`
-	Duration   string `json:"duration"`
-	Status     int    `json:"status"`
-	Message    string `json:"message"`
+	UUID                 string `json:"uuid"`
+	VendorName           string `json:"vendor_name"`
+	VendorUrl            string `json:"vendor_url"`
+	SubscriptionDuration string `json:"duration"`
+	Status               int    `json:"status"`
+	Message              string `json:"message"`
 }
 
 type StatusResponse struct {
@@ -86,11 +86,11 @@ func GetSubscription(dynamoClient *dynamodb.DynamoDB, tableName, uuid, username 
 
 	log.Printf("Successfully retreived Item from table %s", tableName)
 	return GetResponse{
-		UUID:       item.UUID,
-		VendorName: item.VendorName,
-		VendorUrl:  item.VendorUrl,
-		Duration:   item.Duration,
-		Status:     200,
+		UUID:                 item.UUID,
+		VendorName:           item.VendorName,
+		VendorUrl:            item.VendorUrl,
+		SubscriptionDuration: item.SubscriptionDuration,
+		Status:               200,
 	}
 }
 

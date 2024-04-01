@@ -21,6 +21,8 @@ mono_crash.*.json
 #Go files
 main
 main.zip
+*.zip
+bootstrap
 
 .DS_Store
 */**/.DS_Store
