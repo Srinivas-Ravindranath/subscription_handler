@@ -26,6 +26,12 @@ type AddItem struct {
 }
 
 func CalcRemindTime(addtime string) string {
+	/*
+		Computes the remaining time for the given duration of
+		the subscription
+		Params: addTime string
+		Return: string
+	*/
 	intTime, err := strconv.Atoi(addtime)
 	if err != nil {
 		log.Fatalf("Invalid Time format to add: %s", err)
@@ -36,7 +42,13 @@ func CalcRemindTime(addtime string) string {
 }
 
 func AddItemToTable(dynamoClient *dynamodb.DynamoDB, tableName string, items AddItem) AddResponse {
-
+	/*
+		Adds a given Item to the DynamoDB table.
+		Params: dynamoClient *dynamodb.DynamoDB
+			    tableName string
+				items AddItem
+		Return: AddResponse
+	*/
 	mappedItem, _ := dynamodbattribute.MarshalMap(items)
 	tableInput := &dynamodb.PutItemInput{
 		Item:      mappedItem,

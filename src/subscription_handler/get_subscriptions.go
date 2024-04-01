@@ -1,3 +1,8 @@
+// Package subscriptions
+/*
+Used to update the fetch a specific item from DynamoDB or
+fetch all subscriptions for a user from DynamoDB
+*/
 package subscriptions
 
 import (
@@ -37,6 +42,15 @@ type SubResponse struct {
 }
 
 func GetSubscription(dynamoClient *dynamodb.DynamoDB, tableName, uuid, username string) GetResponse {
+	/*
+		Retrieves the given Item in the DynamoDB table based on the UUID
+		and the username provided.
+		Params: dynamoClient *dynamodb.DynamoDB
+			    tableName string
+				uuid string
+				username string
+		Return: GetResponse
+	*/
 
 	input := &dynamodb.GetItemInput{
 		TableName: aws.String(tableName),
@@ -95,6 +109,14 @@ func GetSubscription(dynamoClient *dynamodb.DynamoDB, tableName, uuid, username 
 }
 
 func GetSubscriptions(dynamoClient *dynamodb.DynamoDB, tableName, userName string) SubResponse {
+	/*
+		Retrieves all Items in the DynamoDB table that matches the
+		userName.
+		Params: dynamoClient *dynamodb.DynamoDB
+			    tableName string
+				username string
+		Return: SubResponse
+	*/
 
 	filter := expression.Name("UserName").Equal(expression.Value(userName))
 	expr, _ := expression.NewBuilder().WithFilter(filter).Build()

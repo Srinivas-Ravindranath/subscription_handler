@@ -1,3 +1,7 @@
+// Package subscriptions
+/*
+Used to update the Item in a DynamoDB table
+*/
 package subscriptions
 
 import (
@@ -21,6 +25,15 @@ type UpdateResponse struct {
 }
 
 func UpdateSubscription(dynamoClient *dynamodb.DynamoDB, tableName, uuid string, item UpdateItem) UpdateResponse {
+	/*
+		Updates the given Item in the DynamoDB table based on the UUID
+		and the username provided.
+		Params: dynamoClient *dynamodb.DynamoDB
+			    tableName string
+				uuid string
+				item UpdateItem
+		Return: UpdateResponse
+	*/
 
 	input := &dynamodb.UpdateItemInput{
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{

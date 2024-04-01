@@ -17,7 +17,16 @@ type DeleteResponse struct {
 }
 
 func DeleteItemFromTable(dynamoClient *dynamodb.DynamoDB, tableName, uuid string, item DeleteItem) DeleteResponse {
-
+	/*
+		Deletes the given Item in the DynamoDB table based on the UUID
+		and the username provided.
+		Params: dynamoClient *dynamodb.DynamoDB
+			    tableName string
+				uuid string
+				username string
+				item DeleteItem
+		Return: DeleteResponse
+	*/
 	input := &dynamodb.DeleteItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"UUID": {
