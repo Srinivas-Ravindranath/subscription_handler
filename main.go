@@ -237,14 +237,20 @@ func handlerPath(ctx context.Context, request events.APIGatewayProxyRequest) (ev
 		return events.APIGatewayProxyResponse{StatusCode: 500, Body: "Internal Server Error"}, err
 	}
 
-	responseJSON, err := json.Marshal(response)
+	responseJSON, err := json.Marshal(response.Body)
 	if err != nil {
 		return events.APIGatewayProxyResponse{StatusCode: 500, Body: "Internal Server Error"}, err
 	}
 
 	return events.APIGatewayProxyResponse{
-		StatusCode: 200,
+		StatusCode: response.StatusCode,
 		Body:       string(responseJSON),
+		Headers: map[string]string{
+			"Access-Control-Allow-Origin":      "*",
+			"Access-Control-Allow-Methods":     "GET, POST, OPTIONS, DELETE",
+			"Access-Control-Allow-Headers":     "Content-Type, Authorization",
+			"Access-Control-Allow-Credentials": "true",
+		},
 	}, nil
 }
 
