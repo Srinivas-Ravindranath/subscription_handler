@@ -6,12 +6,13 @@ fetch all subscriptions for a user from DynamoDB
 package subscriptions
 
 import (
+	"log"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
-	"log"
 )
 
 type GetItem struct {
@@ -29,6 +30,15 @@ type GetResponse struct {
 	SubscriptionDuration string `json:"duration"`
 	Status               int    `json:"status"`
 	Message              string `json:"message"`
+}
+
+type SubList struct {
+	UUID                 string `json:"uuid"`
+	UserName             string `json:"username"`
+	RemindTime           string `json:"remind_time"`
+	VendorName           string `json:"vendor_name"`
+	VendorUrl            string `json:"vendor_url"`
+	SubscriptionDuration string `json:"duration"`
 }
 
 type StatusResponse struct {
@@ -167,9 +177,27 @@ func GetSubscriptions(dynamoClient *dynamodb.DynamoDB, tableName, userName strin
 	}
 
 	var subscriptions []GetResponse
-	err = dynamodbattribute.UnmarshalListOfMaps(result.Items, &subscriptions)
-	if err != nil {
-		panic(err)
+	for _, i := range result.Items {
+		item := GetItem{}
+		err = dynamodbattribute.UnmarshalMap(i, &item)
+		if err != nil {
+			log.Printf("Failed to unmarshal Record, %v", err)
+			return SubResponse{
+				StatusCode: 400,
+				Subscriptions: []GetResponse{
+					{
+						Message: "Failed to unmarshal Record",
+					},
+				},
+			}
+		}
+		subscriptions = append(subscriptions, GetResponse{
+			UUID:                 item.UUID,
+			VendorName:           item.VendorName,
+			VendorUrl:            item.VendorUrl,
+			SubscriptionDuration: item.SubscriptionDuration,
+			Status:               200,
+		})
 	}
 
 	finalResponse := SubResponse{

@@ -9,15 +9,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"regexp"
+	subscriptions "subHandler/src/subscription_handler"
+
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/google/uuid"
-	"os"
-	"regexp"
-	"subHandler/src/subscription_handler"
 )
 
 type dynamoAttr struct {
@@ -68,14 +69,13 @@ func handlerSubscription(ctx context.Context, request events.APIGatewayProxyRequ
 	*/
 
 	httpMethod := request.HTTPMethod
+
 	dynamoCli := initialize()
 	if httpMethod == "GET" {
-		var getItem GetItem
-		err := json.Unmarshal([]byte(request.Body), &getItem)
-		if err != nil {
-			return events.APIGatewayProxyResponse{StatusCode: 400, Body: "Bad Request"}, nil
-		}
-		subscriptionsResponse := subscriptions.GetSubscriptions(dynamoCli.dynamoCli, dynamoCli.tableName, getItem.UserName)
+
+		userName := request.PathParameters["userName"]
+
+		subscriptionsResponse := subscriptions.GetSubscriptions(dynamoCli.dynamoCli, dynamoCli.tableName, userName)
 		responseBody, err := json.Marshal(subscriptionsResponse)
 		if err != nil {
 			return events.APIGatewayProxyResponse{StatusCode: 500}, err
@@ -125,13 +125,9 @@ func handlerSubscriptionID(ctx context.Context, request events.APIGatewayProxyRe
 	httpMethod := request.HTTPMethod
 	dynamoCli := initialize()
 	if httpMethod == "GET" {
-		var getItem GetItem
 		subscriptionID := request.PathParameters["subscription_id"]
-		err := json.Unmarshal([]byte(request.Body), &getItem)
-		if err != nil {
-			return events.APIGatewayProxyResponse{StatusCode: 400, Body: "Bad Request"}, nil
-		}
-		subscriptionResponse := subscriptions.GetSubscription(dynamoCli.dynamoCli, dynamoCli.tableName, subscriptionID, getItem.UserName)
+		userName := request.PathParameters["userName"]
+		subscriptionResponse := subscriptions.GetSubscription(dynamoCli.dynamoCli, dynamoCli.tableName, subscriptionID, userName)
 		responseBody, err := json.Marshal(subscriptionResponse)
 		if err != nil {
 			return events.APIGatewayProxyResponse{StatusCode: 500}, err
@@ -142,13 +138,9 @@ func handlerSubscriptionID(ctx context.Context, request events.APIGatewayProxyRe
 		}, nil
 	}
 	if httpMethod == "DELETE" {
-		var deleteItem subscriptions.DeleteItem
 		subscriptionID := request.PathParameters["subscription_id"]
-		err := json.Unmarshal([]byte(request.Body), &deleteItem)
-		if err != nil {
-			return events.APIGatewayProxyResponse{StatusCode: 400, Body: "Bad Request"}, nil
-		}
-		deleteResponse := subscriptions.DeleteItemFromTable(dynamoCli.dynamoCli, dynamoCli.tableName, subscriptionID, deleteItem)
+		userName := request.PathParameters["userName"]
+		deleteResponse := subscriptions.DeleteItemFromTable(dynamoCli.dynamoCli, dynamoCli.tableName, subscriptionID, userName)
 		responseBody, err := json.Marshal(deleteResponse)
 		if err != nil {
 			return events.APIGatewayProxyResponse{StatusCode: 500}, err
@@ -211,10 +203,18 @@ func handlerPath(ctx context.Context, request events.APIGatewayProxyRequest) (ev
 	var handlerFunc func(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error)
 	fmt.Println(request)
 	fmt.Println("Entering Handler path")
+	fmt.Println("Path: ", path)
+	fmt.Println(path)
+
 	// We need to regex match the path after subscription/* to parse the url correctly
-	subscriptionIDRegex, err := regexp.Compile(`^\/subscriptions\/([0-9a-zA-Z-]+)$`)
-	if err != nil {
-		return events.APIGatewayProxyResponse{StatusCode: 500, Body: "Internal Server Error"}, err
+	subscriptionIDRegex, err1 := regexp.Compile(`^\/subscriptions\/([0-9a-zA-Z-]+)\/user\/([0-9a-zA-Z-]+)$`)
+	subscriptionListRegex, err2 := regexp.Compile(`^\/subscriptions\/list\/([0-9a-zA-Z-]+)$`)
+
+	if err1 != nil {
+		return events.APIGatewayProxyResponse{StatusCode: 500, Body: "Internal Server Error"}, err1
+	}
+	if err2 != nil {
+		return events.APIGatewayProxyResponse{StatusCode: 500, Body: "Internal Server Error"}, err2
 	}
 	// We need to regex match the path after subscription/update/* to parse the url correctly
 	updateSubscriptionIDRegex, err := regexp.Compile(`^\/subscriptions\/update\/([0-9a-zA-Z-]+)$`)
@@ -223,7 +223,7 @@ func handlerPath(ctx context.Context, request events.APIGatewayProxyRequest) (ev
 	}
 	// Call the correct function only when regex matches AKA results in BOOL True
 	switch true {
-	case path == "/subscriptions":
+	case subscriptionListRegex.MatchString(path):
 		handlerFunc = handlerSubscription
 	case subscriptionIDRegex.MatchString(path):
 		handlerFunc = handlerSubscriptionID
