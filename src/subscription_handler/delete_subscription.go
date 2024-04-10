@@ -1,10 +1,11 @@
 package subscriptions
 
 import (
+	"log"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"log"
 )
 
 type DeleteItem struct {
@@ -16,7 +17,7 @@ type DeleteResponse struct {
 	StatusCode int    `json:"status_code"`
 }
 
-func DeleteItemFromTable(dynamoClient *dynamodb.DynamoDB, tableName, uuid string, item DeleteItem) DeleteResponse {
+func DeleteItemFromTable(dynamoClient *dynamodb.DynamoDB, tableName, uuid string, userName string) DeleteResponse {
 	/*
 		Deletes the given Item in the DynamoDB table based on the UUID
 		and the username provided.
@@ -33,7 +34,7 @@ func DeleteItemFromTable(dynamoClient *dynamodb.DynamoDB, tableName, uuid string
 				S: aws.String(uuid),
 			},
 			"UserName": {
-				S: aws.String(item.UserName),
+				S: aws.String(userName),
 			},
 		},
 		TableName: aws.String(tableName),
